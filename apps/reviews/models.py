@@ -7,7 +7,7 @@ from apps.core.models import UniqueIDModel, TimeStampModel
 
 class Review(UniqueIDModel, TimeStampModel):
 
-    listing = models.ForeignKey('Listing', related_name='reviews', on_delete=models.CASCADE)
+    listing = models.ForeignKey('listings.Listing', related_name='reviews', on_delete=models.CASCADE)
     review = models.TextField(max_length=500, blank=True)
     commentator = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='comments', on_delete=models.CASCADE

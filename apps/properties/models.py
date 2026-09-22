@@ -47,7 +47,7 @@ class Property(UniqueIDModel, TimeStampModel):
     living_area = models.DecimalField(
         max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('1.00'))]
     )
-    amenities = models.ManyToManyField('Amenity', related_name='properties', null=True)
+    amenities = models.ManyToManyField('Amenity', related_name='properties')
 
     def __str__(self):
         address = f"{self.street}, {self.building}"
@@ -114,13 +114,7 @@ class Property(UniqueIDModel, TimeStampModel):
 
 
 class Amenity(UniqueIDModel, TimeStampModel):
-    has_wifi = models.BooleanField(default=False)
-    has_bedding = models.BooleanField(default=False)
-    has_dishes = models.BooleanField(default=False)
-    has_furniture = models.BooleanField(default=False)
-    has_washing_machine = models.BooleanField(default=False)
-    has_tv = models.BooleanField(default=False)
-    has_refrigerator = models.BooleanField(default=False)
+    name = models.CharField(max_length=50, unique=True)
 
     class Meta:
         db_table = 'amenities'

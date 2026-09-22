@@ -3,6 +3,8 @@ from django.utils import timezone
 
 import uuid
 
+from .managers import SoftDeleteManager
+
 
 class UniqueIDModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -16,17 +18,26 @@ class TimeStampModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
+    objects = SoftDeleteManager
+
     class Meta:
         abstract = True
+
+    @property
+    def is_updated(self):
+        return self.created_at < self.updated_at
 
     @property
     def is_deleted(self):
         return self.deleted_at is not None
 
-    # def delete(self, *args, **kwargs):
-    #     self.deleted_at = timezone.now()
-    #     self.save()
-    #     return 1, {self._meta.label: 1}
+    def delete(self, *args, **kwargs):
+        self.deleted_at = timezone.now()
+        self.save()
+        return 1, {self._meta.label: 1}
+
+    def hard_delete(self, *args, **kwargs):
+        return super().delete(*args, **kwargs)
 
 
 class LodgingType(models.TextChoices):

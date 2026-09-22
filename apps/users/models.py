@@ -42,7 +42,7 @@ class User(AbstractUser):
     bio = models.CharField(max_length=200, blank=True, default='', verbose_name=_('biography'))
     profile_photo = models.ImageField(upload_to=user_directory_path, null=True,
                                       blank=True, verbose_name=_('profile photo'))
-    favorite_listings = models.ManyToManyField('Listing', related_name='favorited_by_users',
+    favorite_listings = models.ManyToManyField('listings.Listing', related_name='favorited_by_users',
                                                blank=True, verbose_name=_('favorite listings'))
 
     username = None

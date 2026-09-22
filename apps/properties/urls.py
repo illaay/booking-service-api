@@ -1,9 +1,11 @@
-from rest_framework import routers
+from django.urls import path, include
+from rest_framework.routers import SimpleRouter
 
-from .views import PropertyCreateViewSet
+from .views import PropertyViewSet
 
+router = SimpleRouter()
+router.register(r'', PropertyViewSet, basename='properties')
 
-router = routers.SimpleRouter()
-router.register('add', PropertyCreateViewSet, basename='add-property')
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include(router.urls)),
+]

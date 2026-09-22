@@ -9,29 +9,33 @@ from datetime import date
 from ..services import normalize_name
 
 
-class UserRetrieveSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
         fields = [
-            'email',
+            'id',
             'first_name',
             'last_name',
-            'phone_number',
             'date_joined',
-            'date_of_birth',
             'bio',
             'profile_photo'
         ]
-        read_only_fields = [
+        read_only_fields = fields
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+
+    class Meta(UserProfileSerializer.Meta):
+        fields = UserProfileSerializer.Meta.fields + [
             'email',
-            'first_name',
-            'last_name',
             'phone_number',
-            'date_joined',
-            'date_of_birth',
-            'bio',
-            'profile_photo'
+            'date_of_birth'
+        ]
+        read_only_fields = [
+            'id',
+            'email',
+            'date_joined'
         ]
 
 
@@ -42,15 +46,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = [
-            'email',
-            'password',
             'first_name',
             'last_name',
-            'phone_number',
+            'email',
+            'password',
             'date_of_birth',
+            'phone_number',
             'bio',
             'profile_photo'
         ]
+        read_only_fields = []
 
     def create(self, validated_data):
         return get_user_model().objects.create_user(**validated_data)

@@ -11,7 +11,7 @@ class Listing(UniqueIDModel, TimeStampModel):
                              verbose_name=_('listing title'))
     description = models.TextField(max_length=1000, blank=True, default='',
                                    verbose_name=_('listing description'))
-    property = models.OneToOneField('Property', on_delete=models.CASCADE, related_name='listing',
+    property = models.OneToOneField('properties.Property', on_delete=models.CASCADE, related_name='listing',
                                     verbose_name=_('property'),
                                     help_text=_('Property associated with the listing.'))
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2,
@@ -21,6 +21,9 @@ class Listing(UniqueIDModel, TimeStampModel):
     min_rental_days = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)],
                                                   verbose_name=_('minimum days'),
                                                   help_text=_('The minimum number of days required for a booking.'))
+    is_active = models.BooleanField(default=True, verbose_name=_('is active'),
+                                    help_text=_('Designates whether this listing is visible to the public.'))
+    views_count = models.PositiveIntegerField(default=0, verbose_name=_('views count'))
 
     class Meta:
         db_table = 'listings'
@@ -48,6 +51,7 @@ class ListingPhoto(UniqueIDModel, TimeStampModel):
         db_table = 'listing_photos'
         verbose_name = 'Listing Photo'
         verbose_name_plural = 'Listing Photos'
+        ordering = ('photo_sequence_number',)
         constraints = [
             models.UniqueConstraint(
                 fields=('listing', 'photo_sequence_number'),

@@ -17,7 +17,7 @@ class Booking(UniqueIDModel, TimeStampModel):
         OCCUPIED = "occupied", "Occupied"
         ENDED = "ended", "Ended"
 
-    listing = models.ForeignKey('Listing', related_name='bookings', on_delete=models.PROTECT,
+    listing = models.ForeignKey('listings.Listing', related_name='bookings', on_delete=models.PROTECT,
                                 verbose_name='listing', help_text='The listing this booking belongs to.')
     lessee = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='bookings', on_delete=models.PROTECT,
                                verbose_name='lessee', help_text='The user who books this listing.')
@@ -28,15 +28,21 @@ class Booking(UniqueIDModel, TimeStampModel):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2,
                                       validators=[MinValueValidator(Decimal('0.01'))],
                                       verbose_name='total booking cost')
+    lessor_comment = models.TextField(max_length=300, blank=True, default='',
+                                      verbose_name='lessor comment',
+                                      help_text='A comment left by a potential lessee when accepting or declining a booking request.')
+    lessee_comment = models.TextField(max_length=300, blank=True, default='',
+                                      verbose_name='lessee comment',
+                                      help_text='A comment left by a potential lessee when creating a booking request.')
 
     class Meta:
         db_table = 'bookings'
         verbose_name = 'Booking'
         verbose_name_plural = 'Bookings'
-        ordering = ('-start_date',)
+        ordering = ('-check_in',)
         constraints = [
             models.CheckConstraint(
-                condition=Q(check_out_date__gt=F('check_in_date')),
+                condition=Q(check_out__gt=F('check_in')),
                 name='booking_checkout_after_checkin'
             )
         ]
