@@ -1,3 +1,4 @@
+from django.urls import path, include
 from rest_framework import routers
 
 from .views import ListingViewSet
@@ -5,6 +6,8 @@ from .views import ListingViewSet
 
 router = routers.SimpleRouter()
 
-router.register(r'listings', ListingViewSet, basename='listings')
+router.register(r'', ListingViewSet, basename='listings')
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include(router.urls))
+]
