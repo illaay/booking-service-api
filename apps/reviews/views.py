@@ -2,12 +2,9 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
-from datetime import timedelta
 
 from .models import Review
 from .serializers.reviews import ReviewDetailSerializer, ReviewCreateSerializer
-from apps.bookings.models import Booking
 
 
 class ReviewViewSet(mixins.CreateModelMixin,
@@ -36,29 +33,6 @@ class ReviewViewSet(mixins.CreateModelMixin,
         queryset = self.get_queryset().filter(commentator=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-    def perform_update(self, serializer):
-        review = self.get_object()
-        today = timezone.now().date()
-
-        if review.commentator != self.request.user:
-            return Response({"detail": "You are not the author of this review."}, status=status.HTTP_403_FORBIDDEN)
-
-        recent_booking_exists = Booking.objects.filter(
-            listing=review.listing,
-            lessee=review.commentator,
-            status=Booking.Status.ENDED,
-            check_out__gte=today - timedelta(days=14),
-            check_out__lte=today
-        ).exists()
-
-        if not recent_booking_exists:
-            return Response(
-                {"detail": "The 14-day window to edit this review has expired."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer.save()
 
     def destroy(self, request, *args, **kwargs):
         review = self.get_object()

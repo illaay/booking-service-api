@@ -10,6 +10,12 @@ from ..services import normalize_name
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer providing a public-facing read-only representation of a User profile.
+
+    Exposes basic identity tokens, biography description fields, creation dates,
+    and associated visual representation assets.
+    """
 
     class Meta:
         model = get_user_model()
@@ -25,6 +31,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
+    """
+    Model serializer dedicated to private profile management routines.
+
+    Enriches the baseline public profile fields with restricted communication parameters
+    such as phone metadata, birth logs, and verified security references.
+    """
 
     class Meta(UserProfileSerializer.Meta):
         fields = UserProfileSerializer.Meta.fields + [
@@ -40,6 +52,12 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    """
+    Transactional model serializer handling robust validation routines for registration.
+
+    Enforces mandatory strict corporate policies regarding operational passwords verification,
+    minimum acceptable age thresholds, and canonical personal identifier string normalization.
+    """
     password = serializers.CharField(required=True, write_only=True)
     date_of_birth = serializers.DateField(required=True)
 

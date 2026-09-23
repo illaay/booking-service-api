@@ -8,6 +8,12 @@ from apps.reviews.serializers.reviews import ReviewDetailSerializer
 
 
 class ListingListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for a high-level summary representation of rental listings.
+
+    Exposes aggregate feedback figures, minimal physical address location context,
+    and associated thumbnail media galleries for index screens.
+    """
     property = PropertyMiniSerializer()
     photos = ListingPhotoSerializer(many=True)
     avg_rating = serializers.FloatField()
@@ -26,6 +32,12 @@ class ListingListSerializer(serializers.ModelSerializer):
 
 
 class ListingDetailSerializer(ListingListSerializer):
+    """
+    Granular model serializer expanding extensive data fields for a single Listing.
+
+    Pulls exhaustive property infrastructure metrics, comprehensive amenity lists,
+    operational status indicators, and an embedded collection of customer reviews.
+    """
     property = PropertyShortSerializer()
     reviews = ReviewDetailSerializer(many=True)
 
@@ -42,6 +54,12 @@ class ListingDetailSerializer(ListingListSerializer):
 
 
 class ListingCreateSerializer(serializers.ModelSerializer):
+    """
+    Model serializer handling strict validation rules for creating and modifying Listings.
+
+    Dynamically binds validation criteria during initial startup routines to protect
+    property boundaries and restrict target inputs to verified owner assets.
+    """
     property = serializers.PrimaryKeyRelatedField(queryset=Property.objects.none())
 
     class Meta:

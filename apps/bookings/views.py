@@ -4,6 +4,8 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
 
 from datetime import timedelta, date
 
@@ -15,6 +17,7 @@ from .serializers.bookings import (
     BookingCreateSerializer,
     BookingActionSerializer)
 from apps.core.permissions.has_phone_number import HasPhoneNumber
+from .filters import BookingFilter
 
 
 class BookingViewSet(
@@ -22,9 +25,20 @@ class BookingViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin
 ):
+    """
+    API ViewSet for managing the Booking lifecycle and transactional actions.
+
+    Provides endpoints for creating bookings, retrieving specific instances,
+    viewing tailored user roles lists (trips and orders), and updating statuses
+    via approval workflows (accept, reject, cancel).
+    """
 
     queryset = Booking.objects.all()
     permission_classes = [IsAuthenticated, HasPhoneNumber]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = BookingFilter
+    ordering_fields = ['amount_paid', 'check_in', 'created_at']
+    ordering = ['-created_at']
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -49,12 +63,18 @@ class BookingViewSet(
 
     @action(detail=False, methods=['get'], url_path='my-trips')
     def my_trips(self, request):
+        """
+        Retrieve a list of bookings where the current user is the lessee.
+        """
         queryset = self.get_queryset().filter(lessee=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='my-orders')
     def my_orders(self, request):
+        """
+        Retrieve a list of bookings for properties owned by the current user.
+        """
         queryset = self.get_queryset().filter(listing__property__owner=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -74,6 +94,9 @@ class BookingViewSet(
 
     @action(detail=True, methods=['post'], url_path='accept')
     def accept_booking(self, request, pk=None):
+        """
+        Accept a pending booking request by the property owner.
+        """
         booking = self.get_object()
 
         if request.user != booking.listing.property.owner:
@@ -87,12 +110,16 @@ class BookingViewSet(
         serializer.is_valid(raise_exception=True)
 
         booking.status = Booking.Status.RESERVED
+        booking.lessor_comment = serializer.validated_data.get('lessor_comment', '')
         booking.save()
 
         return Response({"status": _("Booking successfully confirmed (Reserved).")})
 
     @action(detail=True, methods=['post'], url_path='reject')
     def reject_booking(self, request, pk=None):
+        """
+        Reject a pending booking request by the property owner.
+        """
         booking = self.get_object()
 
         if request.user != booking.listing.property.owner:
@@ -105,12 +132,16 @@ class BookingViewSet(
         serializer.is_valid(raise_exception=True)
 
         booking.status = Booking.Status.CANCELED
+        booking.lessor_comment = serializer.validated_data.get('lessor_comment', '')
         booking.save()
 
         return Response({"status": _("Booking declined by the host (Canceled).")})
 
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel_booking(self, request, pk=None):
+        """
+        Cancel an existing booking by either the lessee or the property owner.
+        """
         booking = self.get_object()
 
         if request.user != booking.lessee and request.user != booking.listing.property.owner:
@@ -124,8 +155,7 @@ class BookingViewSet(
         if date.today() > booking.check_in - timedelta(days=1):
             return Response({"detail": _("Booking cannot be cancelled less than a day before the check-in date.")})
 
-
         booking.status = Booking.Status.CANCELED
         booking.save()
 
-        return Response({"status": "Booking successfully cancelled."})
+        return Response({"status": _("Booking successfully cancelled.")})

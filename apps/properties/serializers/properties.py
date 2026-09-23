@@ -1,12 +1,20 @@
 from rest_framework import serializers
 from apps.properties.models import Property
 from apps.core.models import LodgingType
+from django.utils.translation import gettext_lazy as _
 
 from ..models import Amenity
 from .amenities import AmenitiesListSerializer
 
 
 class PropertyMiniSerializer(serializers.ModelSerializer):
+    """
+    Serializer providing baseline geographical location fields for a Property.
+
+    Exposes minimal identification parameters and basic address attributes
+    primarily targeting index lookups.
+    """
+
     class Meta:
         model = Property
         fields = [
@@ -21,6 +29,12 @@ class PropertyMiniSerializer(serializers.ModelSerializer):
 
 
 class PropertyShortSerializer(PropertyMiniSerializer):
+    """
+    Extended model serializer displaying comprehensive Property characteristics.
+
+    Includes detailed layout metrics, comfort assets collections, and host data.
+    Dynamically strips out operational telephone parameters for unauthenticated traffic.
+    """
     owner_first_name = serializers.CharField(source='owner.first_name', read_only=True)
     owner_last_name = serializers.CharField(source='owner.last_name', read_only=True)
     owner_phone_number = serializers.CharField(source='owner.phone_number', read_only=True)
@@ -55,6 +69,12 @@ class PropertyShortSerializer(PropertyMiniSerializer):
 
 
 class PropertyCreateSerializer(serializers.ModelSerializer):
+    """
+    Validation serializer dedicated to processing safe new Property registration.
+
+    Enforces architectural constraints mapping and validates operational layout inputs
+    against distinct housing structural categories.
+    """
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
     amenities = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -91,7 +111,6 @@ class PropertyCreateSerializer(serializers.ModelSerializer):
             'lodging_type_display'
         ]
 
-
     def validate(self, data):
         lodging_type = data.get('lodging_type')
         apartment_number = data.get('apartment_number')
@@ -100,24 +119,24 @@ class PropertyCreateSerializer(serializers.ModelSerializer):
         if lodging_type == LodgingType.HOUSE and (apartment_number or room_number):
             raise serializers.ValidationError(
                 {
-                    'apartment_number': 'The apartment number is not required for detached house.',
-                    'room_number': 'The room number is not required for detached house.'
+                    'apartment_number': _('The apartment number is not required for detached house.'),
+                    'room_number': _('The room number is not required for detached house.')
                 }
             )
 
         if lodging_type == LodgingType.APARTMENT and (not apartment_number or room_number):
             raise serializers.ValidationError(
                 {
-                    'apartment_number': 'The apartment number is required for apartment.',
-                    'room_number': 'The room number is not required for apartment.'
+                    'apartment_number': _('The apartment number is required for apartment.'),
+                    'room_number': _('The room number is not required for apartment.')
                 }
             )
 
         if lodging_type == LodgingType.COMMUNAL and (not apartment_number or not room_number):
             raise serializers.ValidationError(
                 {
-                    'apartment_number': 'The apartment number is required for communal apartment.',
-                    'room_number': 'The room number is required for communal apartment.'
+                    'apartment_number': _('The apartment number is required for communal apartment.'),
+                    'room_number': _('The room number is required for communal apartment.')
                 }
             )
 

@@ -7,6 +7,9 @@ from .managers import SoftDeleteManager
 
 
 class UniqueIDModel(models.Model):
+    """
+    An abstract base class model providing a unique UUID primary key.
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     class Meta:
@@ -14,29 +17,48 @@ class UniqueIDModel(models.Model):
 
 
 class TimeStampModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)
+    """
+    An abstract base class model tracking instantiation, update, and deletion states.
 
-    objects = SoftDeleteManager
+    Enables automatic record creation/modification dates tracking alongside
+    native platform-wide cascading soft-deletion workflows.
+    """
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='created at',
+        help_text='The timestamp when the object instance was originally created.'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='updated at',
+        help_text='The timestamp when the object instance was last modified.'
+    )
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='deleted at',
+        help_text='The timestamp indicating when the object was softly marked as deleted.'
+    )
+
+    objects = SoftDeleteManager()
 
     class Meta:
         abstract = True
 
     @property
-    def is_updated(self):
+    def is_updated(self) -> bool:
         return self.created_at < self.updated_at
 
     @property
-    def is_deleted(self):
+    def is_deleted(self) -> bool:
         return self.deleted_at is not None
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs) -> tuple:
         self.deleted_at = timezone.now()
         self.save()
         return 1, {self._meta.label: 1}
 
-    def hard_delete(self, *args, **kwargs):
+    def hard_delete(self, *args, **kwargs) -> tuple:
         return super().delete(*args, **kwargs)
 
 

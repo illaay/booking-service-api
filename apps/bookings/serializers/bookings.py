@@ -8,6 +8,12 @@ from apps.listings.serializers.listings import ListingListSerializer
 
 
 class BookingListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for a concise summary representation of Bookings.
+
+    Used primarily in index or shallow data listings where extensive detail
+    on user properties and communications is omitted.
+    """
     listing = ListingListSerializer()
 
     class Meta:
@@ -25,6 +31,12 @@ class BookingListSerializer(serializers.ModelSerializer):
 
 
 class BookingDetailSerializer(serializers.ModelSerializer):
+    """
+    Detailed model serializer for granular insight into individual Bookings.
+
+    Pulls computed identities for both the lessee and lessor, alongside
+    text comments provided throughout the validation cycle.
+    """
     listing = ListingListSerializer()
     lessee_first_name = serializers.CharField(source='lessee.first_name')
     lessee_last_name = serializers.CharField(source='lessee.last_name')
@@ -52,6 +64,12 @@ class BookingDetailSerializer(serializers.ModelSerializer):
 
 
 class BookingActionSerializer(serializers.ModelSerializer):
+    """
+    Targeted model serializer managing transactional feedback parameters.
+
+    Exclusively updates specific status modification communications initiated
+    by the platform host.
+    """
     lessor_comment = serializers.CharField(required=False)
 
     class Meta:
@@ -60,6 +78,12 @@ class BookingActionSerializer(serializers.ModelSerializer):
 
 
 class BookingCreateSerializer(serializers.ModelSerializer):
+    """
+    Transactional serializer dedicated to processing safe new Booking requests.
+
+    Enforces calendar sequence logic, rental period guidelines, financial verification,
+    and safeguards against circular host self-booking actions.
+    """
     lessee = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:

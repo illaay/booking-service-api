@@ -9,7 +9,12 @@ from apps.core.models import UniqueIDModel, TimeStampModel
 
 
 class Booking(UniqueIDModel, TimeStampModel):
+    """
+    Represents a booking instance for a listing.
 
+    Tracks duration, cost, current processing status, and transaction communication
+    between the lessee and the lessor.
+    """
     class Status(models.TextChoices):
         REQUESTED = "requested", "Requested"
         RESERVED = "reserved", "Reserved"
@@ -30,7 +35,7 @@ class Booking(UniqueIDModel, TimeStampModel):
                                       verbose_name='total booking cost')
     lessor_comment = models.TextField(max_length=300, blank=True, default='',
                                       verbose_name='lessor comment',
-                                      help_text='A comment left by a potential lessee when accepting or declining a booking request.')
+                                      help_text='A comment left by a potential lessor when accepting or declining a booking request.')
     lessee_comment = models.TextField(max_length=300, blank=True, default='',
                                       verbose_name='lessee comment',
                                       help_text='A comment left by a potential lessee when creating a booking request.')
@@ -46,3 +51,13 @@ class Booking(UniqueIDModel, TimeStampModel):
                 name='booking_checkout_after_checkin'
             )
         ]
+
+    def __str__(self) -> str:
+        return f"Booking {self.id} ({self.status})"
+
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__}: id={self.id}, "
+            f"listing_id={self.listing_id}, lessee_id={self.lessee_id}, "
+            f"status={self.status}>"
+        )

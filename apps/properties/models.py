@@ -9,47 +9,69 @@ from apps.core.models import UniqueIDModel, TimeStampModel, LodgingType
 
 
 class Property(UniqueIDModel, TimeStampModel):
+    """
+    Represents physical real estate infrastructure.
+
+    Stores address data, internal structural layout boundaries, area capacities,
+    assigned comfort amenities, and host registration details.
+    """
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name="properties", on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, related_name="properties", on_delete=models.CASCADE,
+        verbose_name='owner', help_text='The user who owns and manages this real estate asset.'
     )
-    # регулируется администратором (User с is_stuff = True)
-    # после теоретической проверки документов
-    is_verified = models.BooleanField(default=False)
-    country = models.CharField(max_length=50)
-    state = models.CharField(max_length=50)
-    city = models.CharField(max_length=50)
-    street = models.CharField(max_length=50)
-    building = models.CharField(max_length=10)
-    # для квартир
-    apartment_number = models.CharField(max_length=7, blank=True, default='')
-    # для коммунальных квартир
-    room_number = models.CharField(max_length=7, blank=True, default='')
+    # regulated by the administrator (User with is_staff = True)
+    # after a theoretical document verification process
+    is_verified = models.BooleanField(
+        default=False, verbose_name='is verified',
+        help_text='Indicates if the property documents have been verified by a platform staff member.'
+    )
+    country = models.CharField(max_length=50, verbose_name='country', help_text='The country where the property is located.')
+    state = models.CharField(max_length=50, verbose_name='state', help_text='The state, region, or province of the property.')
+    city = models.CharField(max_length=50, verbose_name='city', help_text='The city or town location.')
+    street = models.CharField(max_length=50, verbose_name='street', help_text='The street name or equivalent public address route.')
+    building = models.CharField(max_length=10, verbose_name='building', help_text='The building number or structure identifier.')
+    # For apartments.
+    apartment_number = models.CharField(max_length=7, blank=True, default='', verbose_name='apartment number', help_text='The unique apartment number inside the structure.')
+    # For communal apartments.
+    room_number = models.CharField(max_length=7, blank=True, default='', verbose_name='room number', help_text='The specific room identifier within a communal apartment configuration.')
     lodging_type = models.CharField(
         max_length=20,
         choices=LodgingType,
         default=LodgingType.APARTMENT,
+        verbose_name='lodging type',
+        help_text='The structural category classification of the residence.'
     )
     total_rooms_count = models.PositiveIntegerField(
-        validators=[MinValueValidator(3), MaxValueValidator(10)]
+        validators=[MinValueValidator(3), MaxValueValidator(10)],
+        verbose_name='total rooms count',
+        help_text='Total capacity counter of all non-service rooms.'
     )
     bedrooms_count = models.PositiveIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(8)]
+        validators=[MinValueValidator(1), MaxValueValidator(8)],
+        verbose_name='bedrooms count',
+        help_text='Total count of dedicated sleeping rooms.'
     )
     bathrooms_count = models.PositiveIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(3)]
+        validators=[MinValueValidator(1), MaxValueValidator(3)],
+        verbose_name='bathrooms count',
+        help_text='Total count of functional sanitation restrooms.'
     )
     kitchens_count = models.PositiveIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(3)]
+        validators=[MinValueValidator(1), MaxValueValidator(3)],
+        verbose_name='kitchens count',
+        help_text='Total count of operational cooking areas.'
     )
     total_area = models.DecimalField(
-        max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('1.00'))]
+        max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('1.00'))],
+        verbose_name='total area', help_text='The gross layout area of the property measured in square units.'
     )
     living_area = models.DecimalField(
-        max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('1.00'))]
+        max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('1.00'))],
+        verbose_name='living area', help_text='The net functional residential living section area measured in square units.'
     )
-    amenities = models.ManyToManyField('Amenity', related_name='properties')
+    amenities = models.ManyToManyField('Amenity', related_name='properties', verbose_name='amenities', help_text='Comfort utilities provided on-site.')
 
-    def __str__(self):
+    def __str__(self) -> str:
         address = f"{self.street}, {self.building}"
 
         if self.apartment_number:
@@ -59,7 +81,7 @@ class Property(UniqueIDModel, TimeStampModel):
 
         return f"{self.city}, {address}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__} "
             f"city={self.city} "
@@ -114,10 +136,19 @@ class Property(UniqueIDModel, TimeStampModel):
 
 
 class Amenity(UniqueIDModel, TimeStampModel):
-    name = models.CharField(max_length=50, unique=True)
+    """
+    Represents an on-site utility, comfort feature, or appliance item.
+    """
+    name = models.CharField(max_length=50, unique=True, verbose_name='name', help_text='The descriptive unique name of the amenity item.')
 
     class Meta:
         db_table = 'amenities'
         verbose_name = 'Amenity'
         verbose_name_plural = 'Amenities'
         ordering = ('-created_at',)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: id={self.id}, name={self.name}>"

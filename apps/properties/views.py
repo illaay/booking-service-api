@@ -7,6 +7,12 @@ from .models import Property
 from .serializers.properties import PropertyCreateSerializer, PropertyShortSerializer
 
 class PropertyViewSet(viewsets.ModelViewSet):
+    """
+    API ViewSet for managing real estate infrastructure assets.
+
+    Provides secure workflows for property registration, list retrieval,
+    and profile-isolated space inventory ownership management.
+    """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -19,6 +25,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='my')
     def my_properties(self, request):
+        """
+        Retrieve a collection of all registered properties belonging to the current host.
+        """
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
