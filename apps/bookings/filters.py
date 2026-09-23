@@ -22,7 +22,7 @@ class BookingFilter(django_filters.FilterSet):
     class Meta:
         model = Booking
         fields = [
-            'property_title',
+            'listing_title',
             'amount_min',
             'amount_max',
             'status',

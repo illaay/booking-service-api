@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'drf_spectacular'
+    'drf_spectacular',
 
     'apps.users.apps.UsersConfig',
     'apps.listings.apps.ListingsConfig',
