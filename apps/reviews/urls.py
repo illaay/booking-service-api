@@ -5,8 +5,7 @@ from .views import ReviewViewSet
 
 
 router = SimpleRouter()
-
-router.register(r'reviews', ReviewViewSet, basename='reviews')
+router.register(r'', ReviewViewSet, basename='reviews')
 
 urlpatterns = [
     path('', include(router.urls))

@@ -1,11 +1,10 @@
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework.routers import SimpleRouter
 
 from .views import ListingViewSet
 
 
-router = routers.SimpleRouter()
-
+router = SimpleRouter()
 router.register(r'', ListingViewSet, basename='listings')
 
 urlpatterns = [
