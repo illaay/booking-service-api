@@ -25,7 +25,6 @@
 - [Project Structure](#project-structure)
 - [Development](#development)
 - [Deployment](#deployment)
-- [License](#license)
 
 ---
 
