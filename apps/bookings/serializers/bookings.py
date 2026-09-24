@@ -106,24 +106,47 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
 
         if check_in < date.today():
-            raise serializers.ValidationError({'check_in': _('Дата заезда не может быть в прошлом.')})
+            raise serializers.ValidationError(
+                {'check_in': _('The check-in date cannot be in the past.')}
+            )
 
         if check_out <= check_in:
-            raise serializers.ValidationError({'check_out': _('Check-out date must be after the check-in date.')})
+            raise serializers.ValidationError(
+                {'check_out': _('Check-out date must be after the check-in date.')}
+            )
 
         if check_in > (date.today() + timedelta(days=180)):
-            raise serializers.ValidationError({'check_in': 'Check-in date cannot be more than 180 days in the future.'})
+            raise serializers.ValidationError(
+                {'check_in': 'Check-in date cannot be more than 180 days in the future.'}
+            )
 
         min_days = listing.min_rental_days
         rental_days = (check_out - check_in).days
         if rental_days < min_days:
             raise serializers.ValidationError(
-                {'detail': _(f'Minimum rental period for this listing is {min_days} days.')})
+                {'detail': _(f'Minimum rental period for this listing is {min_days} days.')}
+            )
 
         if attrs.get('amount_paid') <= 0:
-            raise serializers.ValidationError({'amount_paid': _('Proposed price must be greater than zero.')})
+            raise serializers.ValidationError(
+                {'amount_paid': _('Proposed price must be greater than zero.')}
+            )
 
         if request and request.user == listing.property.owner:
-            raise serializers.ValidationError({'detail': _('You cannot book your own listing.')})
+            raise serializers.ValidationError(
+                {'detail': _('You cannot book your own listing.')}
+            )
+
+        overlapping_bookings_exist = Booking.objects.filter(
+            listing=listing,
+            status__in=[Booking.Status.RESERVED, Booking.Status.OCCUPIED],
+            check_in__lt=check_out,
+            check_out__gt=check_in
+        ).exists()
+
+        if overlapping_bookings_exist:
+            raise serializers.ValidationError(
+                {'detail': _('The selected listing is already booked for these dates.')}
+            )
 
         return attrs

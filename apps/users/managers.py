@@ -1,5 +1,7 @@
 from django.contrib.auth.models import BaseUserManager
 
+from apps.core.managers import SoftDeleteQuerySet
+
 
 class UserManager(BaseUserManager):
     """
@@ -10,15 +12,12 @@ class UserManager(BaseUserManager):
         """
         Return only active, non-deleted user instances by default.
         """
-        # Импортируем локально, чтобы избежать круговых импортов
-        from apps.core.managers import SoftDeleteQuerySet
         return SoftDeleteQuerySet(self.model, using=self._db).filter(deleted_at__isnull=True)
 
     def all_with_deleted(self):
         """
         Return all users, including those softly marked as deleted.
         """
-        from apps.core.managers import SoftDeleteQuerySet
         return SoftDeleteQuerySet(self.model, using=self._db)
 
     def create_user(self, email, password=None, **extra_fields):
