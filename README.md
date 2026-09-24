@@ -6,7 +6,6 @@
 [![Django](https://img.shields.io/badge/django-6.1.1-green)](https://www.djangoproject.com/)
 [![DRF](https://img.shields.io/badge/DRF-3.18.1-red)](https://www.django-rest-framework.org/)
 [![Celery](https://img.shields.io/badge/celery-5.6.3-brightgreen)](https://docs.celeryq.dev/)
-[![License](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
 ## Table of Contents
 
